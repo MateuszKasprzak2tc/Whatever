@@ -1,6 +1,7 @@
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class Graph {
@@ -30,7 +31,8 @@ public class Graph {
         }
 
         Edge newEdge = new Edge();
-        newEdge.vertex = vertex2;
+        newEdge.vertex = vertex1;
+        newEdge.destination = vertex2;
         newEdge.weight = weight;
         vertex1.edges.add(newEdge);
 
@@ -104,5 +106,167 @@ public class Graph {
 
         }
    }
+
+   public int kruskal(){
+        int totalWeight = 0;
+        List<Edge> allEdges = new ArrayList<>();
+
+        for (Vertex vertex : vertices){
+            allEdges.addAll(vertex.edges);
+        }
+
+       System.out.println(allEdges.size());
+
+        allEdges.sort(Comparator.comparing(e -> e.weight));
+
+        for(Edge edge: allEdges){
+            System.out.print(edge.weight);
+            System.out.print(" ");
+        }
+       System.out.println("");
+
+        Set<Integer> tree = new HashSet<>();
+
+        while (tree.size() != this.vertices.size()){
+            Edge e = allEdges.remove(0);
+            if(tree.contains(e.vertex.key) && tree.contains(e.destination.key)){
+                continue;
+            }
+            tree.add(e.vertex.key);
+            tree.add(e.destination.key);
+            totalWeight += e.weight;
+        }
+
+//        Set<Vertex> visitedVertices = new HashSet<>();
+//
+//        for (Edge edge : allEdges){
+//            Vertex source = edge.vertex;
+//            Vertex destination = edge.destination;
+//            if( visitedVertices.contains(source) || !visitedVertices.contains(destination)){
+//                totalWeight += edge.weight;
+//                System.out.println(String.valueOf(totalWeight));
+//                visitedVertices.add(source);
+//                visitedVertices.add(destination);
+//            }
+//        }
+//
+          return totalWeight;
+   }
+
+//    public int prim() {
+//        int totalWeight = 0;
+//        Set<Vertex> visitedVertices = new HashSet<>();
+//        PriorityQueue<Edge> priorityQueue = new PriorityQueue<>(Comparator.comparingInt(e -> e.weight));
+//
+//        Vertex startVertex = vertices.get(0);
+//        visitedVertices.add(startVertex);
+//
+//        for (Edge edge :startVertex.edges){
+//            priorityQueue.add(edge);
+//        }
+//
+//        while(!priorityQueue.isEmpty() && visitedVertices.size() < vertices.size()){
+//            Edge minEdge
+//        }
+//    }
+
+   @BeforeEach
+    void inniTest(){
+       for(int i = 0; i < 8; i++){
+           addVertex(i);
+
+       };
+       addEdge(4,6,1);//
+       addEdge(4,5,2);//
+       addEdge(2,7,3);//
+       addEdge(0,6,3);//
+       addEdge(2,4,4);//
+       addEdge(0,1,5);//
+       addEdge(2,6,5);//
+       addEdge(1,5,6);//
+       addEdge(5,6,6);//
+       addEdge(1,7,7);//
+       addEdge(1,4,8);//
+       addEdge(3,6,8);//
+       addEdge(0,3,9);//
+       addEdge(1,2,9);
+       addEdge(2,3,9);
+       addEdge(6,7,9);
+   }
+   @Test
+    void shouldKrusal(){
+
+           int actual = kruskal();
+           int expected = 26;
+           Assertions.assertEquals(expected, actual);
+
+   }
+
+    public Map<Vertex,Integer> greedyColoring(){
+        if(vertices.isEmpty()){
+            System.out.println("Empty graph.");
+            return null;
+        }
+
+        Map<Vertex, Integer> vertexColours = new HashMap<>();
+        Set<Integer> usedColours = new HashSet<>();
+
+        for(Vertex vertex : vertices){
+            Set<Integer> neighbourColours = new HashSet<>();
+            for(Vertex neighbour : vertex.getNeighbours()){
+                if(vertexColours.containsKey(neighbour)){
+                    neighbourColours.add(vertexColours.get(neighbour));
+                }
+            }
+            int colour = findSmallestAvailableColour(usedColours, neighbourColours);
+            vertexColours.put(vertex, colour);
+            usedColours.add(colour);
+        }
+
+        System.out.println("Number of colors used: " + usedColours.size());
+        return vertexColours;
+    }
+
+    private int findSmallestAvailableColour(Set<Integer> usedColours, Set<Integer> neighbourColours) {
+        for(int colour = 0; ; colour++){
+            if(!usedColours.contains(colour) && !neighbourColours.contains(colour)){
+                return colour;
+            }
+        }
+    }
+
+
+    @Test
+    void shouldColour(){
+
+        Graph graph = new Graph();
+
+        for(int i = 0; i <= 5; i++){
+            graph.addVertex(i);
+        }
+        graph.addEdge(1,2,0);
+        graph.addEdge(1,3,0);
+        graph.addEdge(2,3,0);
+        graph.addEdge(2,4,0);
+        graph.addEdge(3,5,0);
+        graph.addEdge(4,5,0);
+
+
+        Map<Vertex, Integer> vertexColours = graph.greedyColoring();
+
+        Assertions.assertNotNull(vertexColours);
+
+        Assertions.assertEquals(5, vertexColours.size());
+
+        for(Vertex vertex : vertices){
+            int colour = vertexColours.get(vertex);
+            for (Vertex neighbour : vertex.getNeighbours()){
+                int neighbourColour = vertexColours.get(neighbour);
+
+                Assertions.assertNotEquals(colour, neighbourColour, "should have diffrent colour");
+            }
+        }
+
+    }
 
 }
